@@ -53,6 +53,7 @@ const (
 	AuthenticationKeyNotYetProgrammed
 )
 
+// OperationError represents an RPMB operation error result.
 type OperationError struct {
 	Result uint16
 }
