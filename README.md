@@ -19,6 +19,8 @@ andrea@inversepath.com
 Documentation
 =============
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/usbarmory/rpmb/doc.svg)](https://pkg.go.dev/github.com/usbarmory/rpmb)
+
 The package API documentation can be found on
 [pkg.go.dev](https://pkg.go.dev/github.com/usbarmory/rpmb).
 
