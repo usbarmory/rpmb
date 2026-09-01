@@ -13,12 +13,13 @@
 // limitations under the License.
 
 // Package rpmb implements Replay Protected Memory Block (RPMB) configuration
-// and control on eMMCs accessed through package [usdhc] (TamaGo NXP uSDHC
-// driver).
+// and control on eMMCs accessed through a [Transport]. TamaGo applications can
+// use package [usdhc] (TamaGo NXP uSDHC driver), while other transports allow
+// the protocol to be tested without hardware.
 //
-// This package is only meant to be used with `GOOS=tamago GOARCH=arm` as
-// supported by the TamaGo framework for bare metal Go, see
-// https://github.com/usbarmory/tamago.
+// Hardware access through package [usdhc] is meant to be used with
+// `GOOS=tamago GOARCH=arm` as supported by the TamaGo framework for bare metal
+// Go, see https://github.com/usbarmory/tamago.
 //
 // The API supports mitigations for CVE-2020-13799 as described in the whitepaper linked at:
 //
@@ -31,31 +32,32 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-
-	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 )
 
 const keyLen = 32
+
+// Transport transfers single [FrameLength]-byte RPMB data frames to and from a
+// card. WriteRPMB must use reliable writes when reliable is true.
+type Transport interface {
+	WriteRPMB(buf []byte, reliable bool) error
+	ReadRPMB(buf []byte) error
+}
 
 // RPMB defines a Replay Protected Memory Block partition access instance.
 type RPMB struct {
 	sync.Mutex
 
-	card *usdhc.USDHC
+	card Transport
 	key  [keyLen]byte
 	init bool
 }
 
-// Init returns a new RPMB instance for a specific MMC card and MAC key. The
-// dummyBlock argument is an unused sector, required for CVE-2020-13799
+// InitWithTransport returns a new RPMB instance for a transport and MAC key.
+// The dummyBlock argument is an unused sector, required for CVE-2020-13799
 // mitigation to invalidate uncommitted writes.
-func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16, writeDummy bool) (p *RPMB, err error) {
+func InitWithTransport(card Transport, key []byte, dummyBlock uint16, writeDummy bool) (p *RPMB, err error) {
 	if card == nil {
-		return nil, fmt.Errorf("no MMC card set")
-	}
-
-	if !card.Info().MMC {
-		return nil, fmt.Errorf("no MMC card detected")
+		return nil, fmt.Errorf("no transport set")
 	}
 
 	if len(key) != keyLen {
