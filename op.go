@@ -228,6 +228,10 @@ func (p *RPMB) transfer(kind byte, offset uint16, buf []byte) (err error) {
 	}
 
 	if kind == AuthenticatedDataRead {
+		if !bytes.Equal(res.Address[:], req.Address[:]) {
+			return errors.New("response address mismatch")
+		}
+
 		copy(buf, res.Data[:])
 	} else if res.Counter() != req.Counter()+1 {
 		return errors.New("write counter mismatch")

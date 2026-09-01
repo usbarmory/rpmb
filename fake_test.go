@@ -138,6 +138,7 @@ func (c *fakeCard) read(req *DataFrame) {
 	}
 
 	res := &DataFrame{Resp: req.Req, Nonce: req.Nonce}
+	copy(res.Address[:], req.Address[:])
 	res.Data = c.sectors[binary.BigEndian.Uint16(req.Address[:])]
 	c.pending = c.sign(res)
 }

@@ -185,3 +185,43 @@ func TestFrameLayoutOffsets(t *testing.T) {
 		t.Errorf("WriteCounter at [500:504] = %x, want deadbeef", got)
 	}
 }
+
+// TestTransportRejectsMisdirectedRead rejects the wrong sector.
+func TestTransportRejectsMisdirectedRead(t *testing.T) {
+	card := newFakeCard()
+	programmer, err := InitWithTransport(card, testKey, 0, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := programmer.ProgramKey(); err != nil {
+		t.Fatalf("program key: %v", err)
+	}
+
+	p, err := InitWithTransport(&misaddressTransport{fakeCard: card}, testKey, 0, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := p.Read(1, make([]byte, FrameLength/2)); err == nil || err.Error() != "response address mismatch" {
+		t.Fatalf("unexpected read error %v", err)
+	}
+}
+
+type misaddressTransport struct {
+	*fakeCard
+}
+
+func (t *misaddressTransport) WriteRPMB(buf []byte, reliable bool) error {
+	var req DataFrame
+	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &req); err != nil {
+		return err
+	}
+
+	if req.Req == AuthenticatedDataRead {
+		binary.BigEndian.PutUint16(req.Address[:], 2)
+		buf = req.Bytes()
+	}
+
+	return t.fakeCard.WriteRPMB(buf, reliable)
+}
