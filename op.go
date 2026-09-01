@@ -25,6 +25,9 @@ import (
 	"log"
 )
 
+// ErrInvalidResponseMAC is returned when response authentication fails.
+var ErrInvalidResponseMAC = errors.New("invalid response MAC")
+
 const (
 	FrameLength = 512
 	macOffset   = 284
@@ -165,7 +168,7 @@ func (p *RPMB) op(req *DataFrame, cfg *Config) (res *DataFrame, err error) {
 		mac.Write(buf[FrameLength-macOffset:])
 
 		if !hmac.Equal(res.KeyMAC[:], mac.Sum(nil)) {
-			return nil, errors.New("invalid response MAC")
+			return nil, ErrInvalidResponseMAC
 		}
 	}
 
