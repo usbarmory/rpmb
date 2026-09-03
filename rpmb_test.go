@@ -171,6 +171,7 @@ func TestMACCoversExpectedBytes(t *testing.T) {
 // TestFrameLayoutOffsets pins the frame length and counter position.
 func TestFrameLayoutOffsets(t *testing.T) {
 	var frame DataFrame
+
 	binary.BigEndian.PutUint32(frame.WriteCounter[:], 0xdeadbeef)
 	buf := frame.Bytes()
 
@@ -214,6 +215,7 @@ type misaddressTransport struct {
 
 func (t *misaddressTransport) WriteRPMB(buf []byte, reliable bool) error {
 	var req DataFrame
+
 	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &req); err != nil {
 		return err
 	}

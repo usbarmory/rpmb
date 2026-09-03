@@ -145,15 +145,19 @@ func (c *fakeCard) read(req *DataFrame) {
 
 func (c *fakeCard) verify(req *DataFrame) bool {
 	frame := req.Bytes()
+
 	mac := hmac.New(sha256.New, c.key[:])
 	mac.Write(frame[FrameLength-macOffset:])
+
 	return hmac.Equal(req.KeyMAC[:], mac.Sum(nil))
 }
 
 func (c *fakeCard) sign(res *DataFrame) []byte {
 	frame := res.Bytes()
+
 	mac := hmac.New(sha256.New, c.key[:])
 	mac.Write(frame[FrameLength-macOffset:])
+
 	copy(res.KeyMAC[:], mac.Sum(nil))
 	return res.Bytes()
 }
@@ -161,8 +165,10 @@ func (c *fakeCard) sign(res *DataFrame) []byte {
 func (c *fakeCard) errorFrame(req *DataFrame, result uint16) []byte {
 	res := &DataFrame{Resp: req.Req, Nonce: req.Nonce}
 	binary.BigEndian.PutUint16(res.Result[:], result)
+
 	if c.programmed {
 		return c.sign(res)
 	}
+
 	return res.Bytes()
 }
