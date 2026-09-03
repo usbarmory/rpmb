@@ -2,13 +2,15 @@ Replay Protected Memory Block (RPMB) driver
 ===========================================
 
 This Go package implements Replay Protected Memory Block (RPMB) configuration
-and control on eMMCs accessed through package
+and control on eMMCs accessed through a transport interface. TamaGo
+applications can use package
 [usdhc](https://pkg.go.dev/github.com/usbarmory/tamago/soc/nxp/usdhc)
-(TamaGo NXP uSDHC driver).
+(TamaGo NXP uSDHC driver), while other transports allow the protocol to be
+tested without hardware.
 
-This package is meant to be to be used with `GOOS=tamago GOARCH=arm` as
-supported by the [TamaGo](https://github.com/usbarmory/tamago) framework for
-bare metal Go.
+Hardware access through package `usdhc` is meant to be used with
+`GOOS=tamago GOARCH=arm` as supported by the
+[TamaGo](https://github.com/usbarmory/tamago) framework for bare metal Go.
 
 Authors
 =======
